@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+
+
+<head>
+
+<title>Book Lesson</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+<h1>Book a Lesson</h1>
+<h2 id="tutorName"></h2>
+
+<input id="studentName" placeholder="Your Name">
+
+<br><br>
+
+<input id="date" type="date">
+
+<br><br>
+
+<input id="time" type="time">
+
+<br><br>
+
+<button onclick="bookLesson()">Confirm Booking</button>
+
+<br><br>
+
+<input id="amount" placeholder="Lesson Price">
+
+<br><br>
+
+<button onclick="payNow()">Pay Now</button>
+
+<p id="paymentMessage"></p>
+
+<p id="bookingMessage"></p>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+
+</html>

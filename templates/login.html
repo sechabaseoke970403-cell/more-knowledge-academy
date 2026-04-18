@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Login - MoreKnowledge Academy</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+<h2>Login / Signup</h2>
+
+<input id="username" placeholder="Username">
+
+<br><br>
+
+<input id="password" type="password" placeholder="Password">
+
+<br><br>
+
+<select id="role">
+<option value="student">Student</option>
+<option value="tutor">Tutor</option>
+</select>
+
+<br><br>
+
+<button onclick="signup()">Signup</button>
+
+<button onclick="login()">Login</button>
+
+<p id="message"></p>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+
+</html>
