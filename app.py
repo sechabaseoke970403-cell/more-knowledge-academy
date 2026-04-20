@@ -40,6 +40,11 @@ def tutor_dashboard():
     return render_template("tutor_dashboard.html")
 
 
+@app.route("/payment")
+def payment():
+    return render_template("payment.html")
+
+
 # ===================== AUTH =====================
 
 @app.route("/signup", methods=["POST"])
@@ -128,8 +133,8 @@ def pay():
 
     return jsonify({
         "message": "Payment processed",
-        "tutor_gets": tutor_share,
-        "platform_gets": platform_share
+        "tutor_earns": tutor_share,
+        "platform_earns": platform_share
     })
 
 
