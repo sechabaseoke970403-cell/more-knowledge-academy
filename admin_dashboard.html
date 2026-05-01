@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<h1>Admin Dashboard</h1>
+
+<h2>Total Platform Earnings</h2>
+<p id="totalEarnings"></p>
+
+<h2>All Payments</h2>
+<div id="paymentList"></div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
