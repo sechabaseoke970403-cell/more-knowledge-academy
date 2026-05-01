@@ -7,20 +7,40 @@
 
 <body>
 
+<nav class="navbar">
+    <h2>MoreKnowledge Academy</h2>
+
+    <div>
+        <a href="/">Home</a>
+        <a href="/tutors">Tutors</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/login">Login</a>
+        <a href="/logout">Logout</a>
+    </div>
+</nav>
+
 <header>
     <h1>MoreKnowledge Academy</h1>
     <p>Learn smarter. Teach better.</p>
 </header>
 
 <nav>
-    <a href="#">Home</a>
-    <a href="#">Tutors</a>
-    <a href="#">Students</a>
+    <a href="/">Home</a>
+    <a href="/tutors">Tutors</a>
+    <a href="/login">Login</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/logout">Logout</a>
 </nav>
 
 <section class="hero">
     <h2>Find the Best Tutors</h2>
     <p>We pay tutors 70% and keep 30%</p>
+
+    <!-- 🔥 ADD THIS BUTTON -->
+    <br>
+    <a href="/tutors">
+        <button>Browse Tutors</button>
+    </a>
 </section>
 
 <section class="tutor-form">
@@ -28,19 +48,15 @@
 <h2>Become a Tutor</h2>
 
 <input id="name" placeholder="Your Name">
-
 <br><br>
 
 <input id="subject" placeholder="Subject">
-
 <br><br>
 
 <input id="price" placeholder="Hourly Rate ($)">
-
 <br><br>
 
 <textarea id="bio" placeholder="Short Bio"></textarea>
-
 <br><br>
 
 <button onclick="addTutor()">Create Profile</button>
@@ -50,6 +66,12 @@
 <section>
     <h2>Available Tutors</h2>
     <ul id="tutorList"></ul>
+
+    <!-- 🔥 ADD THIS -->
+    <br>
+    <a href="/tutors">
+        <button>Go to Full Tutor Marketplace</button>
+    </a>
 </section>
 
 <script src="{{ url_for('static', filename='script.js') }}"></script>
