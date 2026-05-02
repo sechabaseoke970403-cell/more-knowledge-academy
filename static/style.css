@@ -1,60 +1,147 @@
+/* ===================== GLOBAL ===================== */
 body {
-    font-family: Arial;
+    font-family: 'Segoe UI', Arial, sans-serif;
     margin: 0;
-    background: #f4f4f4;
+    background: #f5f7fb;
+    color: #333;
 }
 
-header {
-    background: #2c3e50;
+/* ===================== NAVBAR ===================== */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e3a8a;
     color: white;
-    text-align: center;
+    padding: 15px 30px;
+}
+
+.navbar h2 {
+    margin: 0;
+}
+
+.navbar a {
+    color: white;
+    margin-left: 15px;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.navbar a:hover {
+    text-decoration: underline;
+}
+
+/* ===================== HEADERS ===================== */
+h1, h2 {
+    margin-left: 20px;
+}
+
+/* ===================== SECTIONS ===================== */
+section {
     padding: 20px;
 }
 
-nav {
-    background: #34495e;
-    padding: 10px;
-    text-align: center;
+/* ===================== CARD GRID ===================== */
+#tutorContainer,
+#bookingContainer,
+#paymentList {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    padding: 20px;
 }
 
-nav a {
+/* ===================== CARDS ===================== */
+.tutorCard {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tutorCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+.tutorCard h3 {
+    margin-top: 0;
+    color: #1e3a8a;
+}
+
+/* ===================== BUTTONS ===================== */
+button {
+    background: #2563eb;
     color: white;
-    margin: 10px;
-    text-decoration: none;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s ease;
 }
 
+button:hover {
+    background: #1e40af;
+}
+
+/* ===================== INPUTS ===================== */
+input, textarea {
+    width: 95%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+textarea {
+    min-height: 80px;
+}
+
+/* ===================== FORM BOX ===================== */
+.tutor-form {
+    background: white;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    max-width: 500px;
+}
+
+/* ===================== HERO SECTION ===================== */
 .hero {
-    background: #3498db;
+    background: linear-gradient(135deg, #2563eb, #1e3a8a);
     color: white;
     padding: 40px;
     text-align: center;
 }
 
-.tutor-form {
-    padding: 20px;
-    text-align: center;
+.hero h2 {
+    margin: 0;
 }
 
-button {
-    padding: 10px;
-    background: green;
-    color: white;
-    border: none;
-    cursor: pointer;
+/* ===================== PAYMENT ===================== */
+#paymentInfo {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #1e3a8a;
 }
 
-.tutorCard{
+#paymentMessage {
+    margin-top: 15px;
+    font-weight: bold;
+}
 
-border:1px solid #ccc;
+/* ===================== RESPONSIVE ===================== */
+@media (max-width: 600px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 
-padding:20px;
-
-margin:20px;
-
-background:white;
-
-border-radius:8px;
-
-width:300px;
-
+    .tutor-form {
+        margin: 10px;
+    }
 }
