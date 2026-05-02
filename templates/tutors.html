@@ -2,30 +2,23 @@
 <html>
 
 <head>
-
-<title>Tutors - MoreKnowledge Academy</title>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
+    <title>Tutor Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
 
-<header>
+<h1>Tutor Dashboard</h1>
 
-<h1>Available Tutors</h1>
+<h2 id="tutorTitle"></h2>
 
-</header>
+<h1 id="tutorTitle">Tutor Dashboard</h1>
 
+<h2>Your Earnings</h2>
 
-<section>
+<p id="tutorEarnings"></p>
 
-<h2>Find a Tutor</h2>
-
-<div id="tutorContainer"></div>
-
-</section>
-
+<div id="tutorBookings"></div>
 
 <script src="{{ url_for('static', filename='script.js') }}"></script>
 
