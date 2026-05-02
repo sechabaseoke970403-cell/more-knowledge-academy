@@ -2,16 +2,41 @@
 <html>
 <head>
     <title>Payment</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-<h1>Payment Page</h1>
+<nav class="navbar">
+    <h2>MoreKnowledge Academy</h2>
+    <div>
+        <a href="/tutors">Back to Tutors</a>
+    </div>
+</nav>
+
+<div class="tutorCard">
+
+<h1>Secure Payment</h1>
+
+<p><b>Tutor:</b> <span id="tutorName"></span></p>
+<p><b>Amount:</b> R<span id="amount"></span></p>
+
+<hr>
+
+<input id="cardName" placeholder="Cardholder Name"><br><br>
+<input id="cardNumber" placeholder="Card Number"><br><br>
+<input id="expiry" placeholder="MM/YY"><br><br>
+<input id="cvv" placeholder="CVV"><br><br>
 
 <p id="paymentInfo"></p>
+
+<br>
 
 <button onclick="payNow()">Pay Now</button>
 
 <p id="paymentMessage"></p>
+
+</div>
 
 <script src="{{ url_for('static', filename='script.js') }}"></script>
 
