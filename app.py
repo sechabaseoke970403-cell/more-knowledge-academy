@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, session, redirect, u
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import requests
+import os
 
 app = Flask(__name__)
 app.secret_key = "CHANGE_THIS_TO_A_RANDOM_SECRET_KEY"
@@ -15,7 +16,6 @@ def get_db():
     conn = sqlite3.connect("database.db")
     conn.row_factory = sqlite3.Row
     return conn
-
 
 def init_db():
     conn = get_db()
@@ -69,31 +69,25 @@ def init_db():
 def home():
     return render_template("index.html")
 
-
 @app.route("/login")
 def login_page():
     return render_template("login.html")
-
 
 @app.route("/tutors")
 def tutors_page():
     return render_template("tutors.html")
 
-
 @app.route("/booking")
 def booking_page():
     return render_template("booking.html")
-
 
 @app.route("/payment")
 def payment_page():
     return render_template("payment.html")
 
-
 @app.route("/payment_success")
 def payment_success():
     return "Payment received. Waiting for confirmation..."
-
 
 @app.route("/dashboard")
 def dashboard():
@@ -101,12 +95,17 @@ def dashboard():
         return redirect(url_for("login_page"))
     return render_template("dashboard.html")
 
-
 @app.route("/tutor_dashboard")
 def tutor_dashboard():
     if "user" not in session or session.get("role") != "tutor":
         return redirect(url_for("login_page"))
     return render_template("tutor_dashboard.html")
+
+@app.route("/admin")
+def admin_dashboard():
+    if "user" not in session or session.get("role") != "admin":
+        return redirect(url_for("login_page"))
+    return render_template("admin.html")
 
 # ===================== AUTH =====================
 
@@ -141,23 +140,19 @@ def signup():
 
     return jsonify({"message": "Account created!"})
 
-
 @app.route("/login_user", methods=["POST"])
 def login_user():
     data = request.json
 
-    username = data.get("username")
-    password = data.get("password")
-
     conn = get_db()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM users WHERE username=?", (username,))
+    cursor.execute("SELECT * FROM users WHERE username=?", (data.get("username"),))
     user = cursor.fetchone()
 
     conn.close()
 
-    if user and check_password_hash(user["password"], password):
+    if user and check_password_hash(user["password"], data.get("password")):
         session["user"] = user["username"]
         session["role"] = user["role"]
 
@@ -167,7 +162,6 @@ def login_user():
         })
 
     return jsonify({"message": "Invalid login"})
-
 
 @app.route("/logout")
 def logout():
@@ -193,7 +187,6 @@ def add_tutor():
 
     return jsonify({"message": "Tutor added!"})
 
-
 @app.route("/get_tutors")
 def get_tutors():
     conn = get_db()
@@ -202,14 +195,7 @@ def get_tutors():
     cursor.execute("SELECT * FROM tutors")
     rows = cursor.fetchall()
 
-    tutors = []
-    for r in rows:
-        tutors.append({
-            "name": r["name"],
-            "subject": r["subject"],
-            "price": r["price"],
-            "bio": r["bio"]
-        })
+    tutors = [dict(r) for r in rows]
 
     conn.close()
     return jsonify(tutors)
@@ -233,7 +219,6 @@ def book_lesson():
 
     return jsonify({"message": "Lesson booked!"})
 
-
 @app.route("/get_bookings")
 def get_bookings():
     conn = get_db()
@@ -242,22 +227,15 @@ def get_bookings():
     cursor.execute("SELECT * FROM bookings")
     rows = cursor.fetchall()
 
-    bookings = []
-    for b in rows:
-        bookings.append({
-            "tutor": b["tutor"],
-            "student": b["student"],
-            "date": b["date"],
-            "time": b["time"]
-        })
+    bookings = [dict(b) for b in rows]
 
     conn.close()
     return jsonify(bookings)
 
+# ===================== PAYMENTS =====================
+
 @app.route("/get_payments")
 def get_payments():
-
-    # 🔐 Optional: protect admin-only
     if "user" not in session:
         return jsonify([])
 
@@ -268,10 +246,8 @@ def get_payments():
     rows = cursor.fetchall()
 
     payments = []
-
     for p in rows:
         amount = float(p["amount"])
-
         payments.append({
             "tutor": p["tutor"],
             "amount": amount,
@@ -282,12 +258,9 @@ def get_payments():
     conn.close()
     return jsonify(payments)
 
-# ===================== PAYMENTS =====================
-
 @app.route("/pay", methods=["POST"])
 def pay():
     data = request.json
-
     amount = data.get("amount")
     tutor = data.get("tutor")
 
@@ -304,63 +277,50 @@ def pay():
     conn.commit()
     conn.close()
 
-    merchant_id = "10000100"
-    merchant_key = "46f0cd694581a"
+    # 🔥 CHANGE THIS AFTER DEPLOY
+    BASE_URL = "https://your-app-name.onrender.com"
+
+    merchant_id = "YOUR_MERCHANT_ID"
+    merchant_key = "YOUR_MERCHANT_KEY"
 
     payment_url = (
-        payment_url = (
-    "https://www.payfast.co.za/eng/process?"
+        "https://sandbox.payfast.co.za/eng/process?"
         f"merchant_id={merchant_id}&"
         f"merchant_key={merchant_key}&"
         f"amount={amount}&"
         f"item_name=Tutor Payment for {tutor}&"
         f"custom_str1={payment_id}&"
-        f"return_url=http://127.0.0.1:5000/payment_success&"
-        f"cancel_url=http://127.0.0.1:5000/payment&"
-        f"notify_url=http://127.0.0.1:5000/itn"
+        f"return_url={BASE_URL}/payment_success&"
+        f"cancel_url={BASE_URL}/payment&"
+        f"notify_url={BASE_URL}/itn"
     )
 
     return jsonify({"payment_url": payment_url})
 
-
 @app.route("/itn", methods=["POST"])
 def itn():
     data = request.form.to_dict()
-    print("ITN DATA:", data)
 
     pf_verify_url = "https://sandbox.payfast.co.za/eng/query/validate"
     response = requests.post(pf_verify_url, data=data)
 
     if response.text != "VALID":
-        print("❌ INVALID ITN")
         return "INVALID"
 
-    print("✅ PayFast VERIFIED")
-
-    payment_status = data.get("payment_status")
-    payment_id = data.get("custom_str1")
-
-    if payment_status == "COMPLETE":
+    if data.get("payment_status") == "COMPLETE":
         conn = get_db()
         cursor = conn.cursor()
 
         cursor.execute(
             "UPDATE payments SET status=? WHERE payment_id=?",
-            ("PAID", payment_id)
+            ("PAID", data.get("custom_str1"))
         )
 
         conn.commit()
         conn.close()
 
-        print("✅ PAYMENT SAVED")
-
     return "OK"
-@app.route("/admin")
-def admin_dashboard():
-    if "user" not in session or session.get("role") != "admin":
-        return redirect(url_for("login_page"))
 
-    return render_template("admin.html")
 # ===================== RUN =====================
 
 if __name__ == "__main__":
