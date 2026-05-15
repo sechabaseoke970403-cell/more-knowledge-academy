@@ -3,9 +3,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import requests
 import os
+import logging
+
+# ===================== CONFIG =====================
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
-app.secret_key = "CHANGE_THIS_TO_A_RANDOM_SECRET_KEY"
+app.secret_key = os.environ.get("SECRET_KEY", "devkey")
 
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
@@ -144,23 +148,29 @@ def signup():
 def login_user():
     data = request.json
 
+    username = data.get("username")
+    password = data.get("password")
+
     conn = get_db()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM users WHERE username=?", (data.get("username"),))
+    cursor.execute("SELECT * FROM users WHERE username=?", (username,))
     user = cursor.fetchone()
 
     conn.close()
 
-    if user and check_password_hash(user["password"], data.get("password")):
+    if user and check_password_hash(user["password"], password):
         session["user"] = user["username"]
         session["role"] = user["role"]
+
+        logging.info(f"User logged in: {username}")
 
         return jsonify({
             "message": "Login successful",
             "role": user["role"]
         })
 
+    logging.warning(f"Failed login attempt: {username}")
     return jsonify({"message": "Invalid login"})
 
 @app.route("/logout")
@@ -277,31 +287,32 @@ def pay():
     conn.commit()
     conn.close()
 
-    # 🔥 CHANGE THIS AFTER DEPLOY
-    BASE_URL = "https://your-app-name.onrender.com"
+    BASE_URL = os.environ.get("BASE_URL")
 
-    merchant_id = "YOUR_MERCHANT_ID"
-    merchant_key = "YOUR_MERCHANT_KEY"
+    # SANDBOX credentials
+    merchant_id = os.environ.get("PAYFAST_ID")
+    merchant_key = os.environ.get("PAYFAST_KEY")
 
     payment_url = (
-        "https://sandbox.payfast.co.za/eng/process?"
+       "https://www.payfast.co.za/eng/process?"
         f"merchant_id={merchant_id}&"
         f"merchant_key={merchant_key}&"
         f"amount={amount}&"
-        f"item_name=Tutor Payment for {tutor}&"
+        f"item_name=Tutor_Payment&"
         f"custom_str1={payment_id}&"
         f"return_url={BASE_URL}/payment_success&"
         f"cancel_url={BASE_URL}/payment&"
         f"notify_url={BASE_URL}/itn"
     )
 
-    return jsonify({"payment_url": payment_url})
+    print(payment_url)   # debug line
 
+    return jsonify({"payment_url": payment_url})
 @app.route("/itn", methods=["POST"])
 def itn():
     data = request.form.to_dict()
 
-    pf_verify_url = "https://sandbox.payfast.co.za/eng/query/validate"
+    pf_verify_url = "https://www.payfast.co.za/eng/query/validate"
     response = requests.post(pf_verify_url, data=data)
 
     if response.text != "VALID":
@@ -321,8 +332,18 @@ def itn():
 
     return "OK"
 
+# ===================== ERRORS =====================
+
+@app.errorhandler(404)
+def not_found(e):
+    return "Page not found", 404
+
+@app.errorhandler(500)
+def server_error(e):
+    return "Server error occurred", 500
+
 # ===================== RUN =====================
 
 if __name__ == "__main__":
     init_db()
-    app.run()
+    app.run(debug=True)
