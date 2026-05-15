@@ -193,23 +193,43 @@ function loadPaymentInfo(){
 
 
 // ===================== PAY =====================
-function payNow(){
+// ===================== PAY =====================
+// ===================== PAY =====================
+function payNow() {
+    console.log("PAY BUTTON CLICKED");
 
-    const tutor = localStorage.getItem("selectedTutor")
-    const amount = localStorage.getItem("selectedPrice")
+    const tutor = localStorage.getItem("selectedTutor");
+    const amount = localStorage.getItem("selectedPrice");
 
-    fetch("/pay",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify({ tutor, amount })
+    console.log("Tutor:", tutor);
+    console.log("Amount:", amount);
+
+    fetch("/pay", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            tutor: tutor,
+            amount: amount
+        })
     })
-    .then(res=>res.json())
-    .then(data=>{
-        window.location.href = data.payment_url
+    .then(response => response.json())
+    .then(data => {
+        console.log("Returned from Flask:", data);
+
+        if (data.payment_url) {
+            console.log("Redirecting...");
+            window.location.href = data.payment_url;
+        } else {
+            alert("Payment URL missing");
+        }
     })
+    .catch(error => {
+        console.error(error);
+        alert("Payment failed");
+    });
 }
-
-
 // ===================== BOOKINGS =====================
 function loadBookings(){
 
