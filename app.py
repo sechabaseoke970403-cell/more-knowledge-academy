@@ -11,8 +11,8 @@ logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "devkey")
 
-app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 # ===================== DATABASE =====================
 
@@ -20,6 +20,7 @@ def get_db():
     conn = sqlite3.connect("database.db")
     conn.row_factory = sqlite3.Row
     return conn
+
 
 def init_db():
     conn = get_db()
@@ -67,31 +68,40 @@ def init_db():
     conn.commit()
     conn.close()
 
+
 # ===================== PAGES =====================
 
 @app.route("/")
 def home():
     return render_template("index.html")
 
+
 @app.route("/login")
 def login_page():
     return render_template("login.html")
+
 
 @app.route("/tutors")
 def tutors_page():
     return render_template("tutors.html")
 
+
 @app.route("/booking")
 def booking_page():
     return render_template("booking.html")
+
 
 @app.route("/payment")
 def payment_page():
     return render_template("payment.html")
 
+
 @app.route("/payment_success")
 def payment_success():
-    return "Payment received. Waiting for confirmation..."
+    return "Payment successful!"
+
+
+# ===================== DASHBOARDS =====================
 
 @app.route("/dashboard")
 def dashboard():
@@ -99,17 +109,20 @@ def dashboard():
         return redirect(url_for("login_page"))
     return render_template("dashboard.html")
 
+
 @app.route("/tutor_dashboard")
 def tutor_dashboard():
     if "user" not in session or session.get("role") != "tutor":
         return redirect(url_for("login_page"))
     return render_template("tutor_dashboard.html")
 
+
 @app.route("/admin")
 def admin_dashboard():
     if "user" not in session or session.get("role") != "admin":
         return redirect(url_for("login_page"))
     return render_template("admin.html")
+
 
 # ===================== AUTH =====================
 
@@ -144,6 +157,7 @@ def signup():
 
     return jsonify({"message": "Account created!"})
 
+
 @app.route("/login_user", methods=["POST"])
 def login_user():
     data = request.json
@@ -163,20 +177,19 @@ def login_user():
         session["user"] = user["username"]
         session["role"] = user["role"]
 
-        logging.info(f"User logged in: {username}")
-
         return jsonify({
             "message": "Login successful",
             "role": user["role"]
         })
 
-    logging.warning(f"Failed login attempt: {username}")
     return jsonify({"message": "Invalid login"})
+
 
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("login_page"))
+
 
 # ===================== TUTORS =====================
 
@@ -197,6 +210,7 @@ def add_tutor():
 
     return jsonify({"message": "Tutor added!"})
 
+
 @app.route("/get_tutors")
 def get_tutors():
     conn = get_db()
@@ -209,6 +223,7 @@ def get_tutors():
 
     conn.close()
     return jsonify(tutors)
+
 
 # ===================== BOOKINGS =====================
 
@@ -229,54 +244,17 @@ def book_lesson():
 
     return jsonify({"message": "Lesson booked!"})
 
-@app.route("/get_bookings")
-def get_bookings():
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM bookings")
-    rows = cursor.fetchall()
-
-    bookings = [dict(b) for b in rows]
-
-    conn.close()
-    return jsonify(bookings)
 
 # ===================== PAYMENTS =====================
 
-@app.route("/get_payments")
-def get_payments():
-    if "user" not in session:
-        return jsonify([])
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM payments WHERE status='PAID'")
-    rows = cursor.fetchall()
-
-    payments = []
-    for p in rows:
-        amount = float(p["amount"])
-        payments.append({
-            "tutor": p["tutor"],
-            "amount": amount,
-            "tutor_earns": round(amount * 0.7, 2),
-            "platform_earns": round(amount * 0.3, 2)
-        })
-
-    conn.close()
-    return jsonify(payments)
 @app.route("/pay", methods=["POST"])
 def pay():
     data = request.json
     amount = data.get("amount")
     tutor = data.get("tutor")
 
-    # create unique payment id
     payment_id = f"{tutor}_{amount}"
 
-    # save payment in database
     conn = get_db()
     cursor = conn.cursor()
 
@@ -288,17 +266,15 @@ def pay():
     conn.commit()
     conn.close()
 
-    # ===============================
-    # PAYFAST SETTINGS
-    # ===============================
-    BASE_URL = os.environ.get("BASE_URL", "http://127.0.0.1:5000")
+    # Get env variables
+    BASE_URL = os.environ.get(
+        "BASE_URL",
+        "https://more-knowledge-academy.onrender.com"
+    )
 
     merchant_id = os.environ.get("PAYFAST_ID", "12957097")
     merchant_key = os.environ.get("PAYFAST_KEY", "pgcxs3ok7kf5o")
 
-    # ===============================
-    # BUILD PAYMENT URL
-    # ===============================
     payment_url = (
         "https://www.payfast.co.za/eng/process?"
         f"merchant_id={merchant_id}&"
@@ -315,14 +291,15 @@ def pay():
 
     return jsonify({"payment_url": payment_url})
 
+
 @app.route("/itn", methods=["POST"])
 def itn():
     data = request.form.to_dict()
 
-    pf_verify_url = "https://www.payfast.co.za/eng/query/validate"
-    response = requests.post(pf_verify_url, data=data)
+    verify_url = "https://www.payfast.co.za/eng/query/validate"
+    response = requests.post(verify_url, data=data)
 
-    if response.text != "VALID":
+    if response.text.strip() != "VALID":
         return "INVALID"
 
     if data.get("payment_status") == "COMPLETE":
@@ -339,15 +316,18 @@ def itn():
 
     return "OK"
 
+
 # ===================== ERRORS =====================
 
 @app.errorhandler(404)
 def not_found(e):
     return "Page not found", 404
 
+
 @app.errorhandler(500)
 def server_error(e):
     return "Server error occurred", 500
+
 
 # ===================== RUN =====================
 
