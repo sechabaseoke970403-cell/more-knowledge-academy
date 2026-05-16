@@ -267,15 +267,16 @@ def get_payments():
 
     conn.close()
     return jsonify(payments)
-
 @app.route("/pay", methods=["POST"])
 def pay():
     data = request.json
     amount = data.get("amount")
     tutor = data.get("tutor")
 
+    # create unique payment id
     payment_id = f"{tutor}_{amount}"
 
+    # save payment in database
     conn = get_db()
     cursor = conn.cursor()
 
@@ -287,14 +288,19 @@ def pay():
     conn.commit()
     conn.close()
 
-    BASE_URL = os.environ.get("BASE_URL")
+    # ===============================
+    # PAYFAST SETTINGS
+    # ===============================
+    BASE_URL = os.environ.get("BASE_URL", "http://127.0.0.1:5000")
 
-    # SANDBOX credentials
-    merchant_id = os.environ.get("PAYFAST_ID")
-    merchant_key = os.environ.get("PAYFAST_KEY")
+    merchant_id = os.environ.get("PAYFAST_ID", "12957097")
+    merchant_key = os.environ.get("PAYFAST_KEY", "pgcxs3ok7kf5o")
 
+    # ===============================
+    # BUILD PAYMENT URL
+    # ===============================
     payment_url = (
-       "https://www.payfast.co.za/eng/process?"
+        "https://www.payfast.co.za/eng/process?"
         f"merchant_id={merchant_id}&"
         f"merchant_key={merchant_key}&"
         f"amount={amount}&"
@@ -305,9 +311,10 @@ def pay():
         f"notify_url={BASE_URL}/itn"
     )
 
-    print(payment_url)   # debug line
+    print(payment_url)
 
     return jsonify({"payment_url": payment_url})
+
 @app.route("/itn", methods=["POST"])
 def itn():
     data = request.form.to_dict()
